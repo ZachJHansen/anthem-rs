@@ -15,5 +15,5 @@ structopt = "0.3"
 termcolor = "1.1"
 
 [dependencies.clingo]
-git = "https://github.com/potassco/clingo-rs"
-rev = "61cc68c0dfef96398db064f0b7fc2e838e7b9204"
+git = "https://github.com/ZachJHansen/clingo-rs"
+rev = "7770a5cadd43b57bdc22a07fe48cf4144ed86f8a"
