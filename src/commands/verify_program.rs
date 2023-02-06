@@ -1,6 +1,6 @@
 pub fn run<P1, P2>(program_path: P1, specification_paths: &[P2],
 	proof_direction: crate::problem::ProofDirection, no_simplify: bool,
-	color_choice: crate::output::ColorChoice)
+	color_choice: crate::output::ColorChoice, time_limit: u64)
 where
 	P1: AsRef<std::path::Path>,
 	P2: AsRef<std::path::Path>,
@@ -51,6 +51,11 @@ where
 			// issue a warning regardless
 			crate::error::Kind::PrivatePredicateInSpecification(_)
 				if !proof_direction.requires_backward_proof() => log::warn!("{}", error),
+            crate::error::Kind::ProgramNotTight(_) => 
+            {
+                log::warn!("{}", error);
+                std::process::exit(0)
+            },
 			_ =>
 			{
 				log::error!("{}", error);
@@ -68,7 +73,7 @@ where
 		}
 	}
 
-	if let Err(error) = problem.prove(proof_direction)
+	if let Err(error) = problem.prove(proof_direction, time_limit)
 	{
 		log::error!("could not verify program: {}", error);
 		std::process::exit(1)

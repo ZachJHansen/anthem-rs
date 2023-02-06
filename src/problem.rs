@@ -41,6 +41,16 @@ impl Problem
 		}
 	}
 
+    /*pub(crate) fn print_statements(&self)
+    {
+        let statements = self.statements.borrow();
+        for (kind, state) in statements.iter() {
+            for x in state.iter() {
+                println!("New statement");
+            }
+        }
+    }*/
+
 	pub(crate) fn add_statement(&self, section_kind: SectionKind, statement: Statement)
 	{
 		let mut statements = self.statements.borrow_mut();
@@ -96,8 +106,10 @@ impl Problem
 							}
 						})
 				{
-					return Err(crate::Error::new_noninput_predicate_in_assumption(
-						predicate_declaration));
+                    println!("\t\tAssumption includes {}, which is not an input predicate (consider declaring {} an input predicate)",
+					predicate_declaration.declaration, predicate_declaration.declaration);
+                    log::warn!("\t\tAssumption includes {}, which is not an input predicate (consider declaring {} an input predicate)",
+					predicate_declaration.declaration, predicate_declaration.declaration);
 				}
 			}
 		}
@@ -122,8 +134,28 @@ impl Problem
 				if predicate_declaration.has_positive_dependency_cycle()
 				{
 					log::warn!("program not tight (positive recursion involving {})", predicate_declaration.declaration);
-					// return Err(crate::Error::new_program_not_tight(
-					// 	std::rc::Rc::clone(&predicate_declaration)));
+                    loop {
+                        let mut decision = String::new();
+                        println!("Program is not tight (contains positive recursion). Continue anyway? (y/n)");
+
+                        std::io::stdin().read_line(&mut decision)
+                                        .expect("Failed to read line");
+
+                        let decision: String = decision.trim().to_string();
+
+                        if decision.eq_ignore_ascii_case("y") {
+                            println!("Continuing proof of program with positive recursion involving predicate {}", predicate_declaration.declaration);
+                            log::warn!("Continuing proof of program with positive recursion involving predicate {}", predicate_declaration.declaration);
+                            break;
+                        } else if decision.eq_ignore_ascii_case("n") {
+                            println!("Exiting proof of program due to positive recursion involving predicate {}", predicate_declaration.declaration);
+                            log::warn!("Exiting proof of program due to positive recursion involving predicate {}", predicate_declaration.declaration);
+                            return Err(crate::Error::new_program_not_tight(
+                                              std::rc::Rc::clone(&predicate_declaration)));
+                        } else {
+                            continue;
+                        }
+                    }
 				}
 
 				if predicate_declaration.has_private_dependency_cycle()
@@ -195,7 +227,7 @@ impl Problem
 		Ok(())
 	}
 
-	pub fn prove(&self, proof_direction: ProofDirection) -> Result<(), crate::Error>
+	pub fn prove(&self, proof_direction: ProofDirection, time_limit: u64) -> Result<(), crate::Error>
 	{
 		if proof_direction.requires_forward_proof()
 		{
@@ -228,7 +260,7 @@ impl Problem
 
 			drop(statements);
 
-			let proof_result = self.prove_unproven_statements()?;
+			let proof_result = self.prove_unproven_statements(time_limit)?;
 
 			let mut step_title_color = termcolor::ColorSpec::new();
 			step_title_color.set_bold(true);
@@ -282,7 +314,7 @@ impl Problem
 
 			drop(statements);
 
-			let proof_result = self.prove_unproven_statements()?;
+			let proof_result = self.prove_unproven_statements(time_limit)?;
 
 			let mut step_title_color = termcolor::ColorSpec::new();
 			step_title_color.set_bold(true);
@@ -321,7 +353,7 @@ impl Problem
 		None
 	}
 
-	fn prove_unproven_statements(&self) -> Result<ProofResult, crate::Error>
+	fn prove_unproven_statements(&self, time_limit: u64) -> Result<ProofResult, crate::Error>
 	{
 		let display_statement = |statement: &mut Statement| -> Result<(), crate::Error>
 		{
@@ -379,6 +411,8 @@ impl Problem
 				{
 					statement.proof_status = ProofStatus::ToProveNow;
 
+					display_statement(statement)?;
+                    println!("");
 					print!("\x1b[s");
 					display_statement(statement)?;
 					print!("\x1b[u");
@@ -399,9 +433,10 @@ impl Problem
 			log::trace!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
 
 			// TODO: make configurable again
+            let string_time: &str = &time_limit.to_string();
 			let (proof_result, proof_time_seconds) =
 				run_vampire(&tptp_problem_to_prove_next_statement,
-					Some(&["--mode", "casc", "--cores", "4", "--time_limit", "300"]))?;
+					Some(&["--mode", "casc", "--cores", "4", "--time_limit", string_time]))?;
 
 			match self.next_unproven_statement_do_mut(
 				|statement| -> Result<(), crate::Error>

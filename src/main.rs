@@ -12,8 +12,8 @@ enum Command
 		#[structopt(name = "program", parse(from_os_str), required(true))]
 		program_path: std::path::PathBuf,
 
-		#[structopt(name = "specification", parse(from_os_str), required(true))]
 		/// One or more specification file paths
+		#[structopt(name = "specification", parse(from_os_str), required(true))]
 		specification_paths: Vec<std::path::PathBuf>,
 
 		/// Proof direction (forward, backward, both)
@@ -27,6 +27,10 @@ enum Command
 		/// Whether to use colors in the output (auto, always, never)
 		#[structopt(name = "color", long, default_value = "auto")]
 		color_choice: anthem::output::ColorChoice,
+
+        /// Time limit for Vampire (seconds)
+        #[structopt(long, default_value = "300")]
+        time_limit: u64,
 	}
 }
 
@@ -45,8 +49,9 @@ fn main()
 			proof_direction,
 			no_simplify,
 			color_choice,
+            time_limit,
 		}
 			=> anthem::commands::verify_program::run(&program_path, specification_paths.as_slice(),
-				proof_direction, no_simplify, color_choice),
+				proof_direction, no_simplify, color_choice, time_limit),
 	}
 }
