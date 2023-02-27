@@ -7,6 +7,7 @@ pub(crate) use section_kind::SectionKind;
 pub(crate) use statement::{ProofStatus, Statement, StatementKind};
 
 use foliage::flavor::{FunctionDeclaration as _, PredicateDeclaration as _};
+use std::io::Write;
 
 #[derive(Copy, Clone, Eq, PartialEq)]
 pub enum ProofResult
@@ -431,6 +432,10 @@ impl Problem
 			let tptp_problem_to_prove_next_statement = format!("{}", self.display_tptp());
 
 			log::trace!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
+
+			let mut file_ref = std::fs::OpenOptions::new().append(true).open("tff.txt").expect("Unable to open file for writing the tff formulas! - Check problem.rs");
+			file_ref.write_all(&tptp_problem_to_prove_next_statement.as_bytes()).expect("write failed");
+			println!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
 
 			// TODO: make configurable again
             let string_time: &str = &time_limit.to_string();
