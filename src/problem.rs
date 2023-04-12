@@ -228,7 +228,7 @@ impl Problem
 		Ok(())
 	}
 
-	pub fn prove(&self, proof_direction: ProofDirection, time_limit: u64) -> Result<(), crate::Error>
+	pub fn prove(&self, proof_direction: ProofDirection, time_limit: u64, cores: u64) -> Result<(), crate::Error>
 	{
 		if proof_direction.requires_forward_proof()
 		{
@@ -261,7 +261,7 @@ impl Problem
 
 			drop(statements);
 
-			let proof_result = self.prove_unproven_statements(time_limit)?;
+			let proof_result = self.prove_unproven_statements(time_limit, cores)?;
 
 			let mut step_title_color = termcolor::ColorSpec::new();
 			step_title_color.set_bold(true);
@@ -315,7 +315,7 @@ impl Problem
 
 			drop(statements);
 
-			let proof_result = self.prove_unproven_statements(time_limit)?;
+			let proof_result = self.prove_unproven_statements(time_limit, cores)?;
 
 			let mut step_title_color = termcolor::ColorSpec::new();
 			step_title_color.set_bold(true);
@@ -354,7 +354,7 @@ impl Problem
 		None
 	}
 
-	fn prove_unproven_statements(&self, time_limit: u64) -> Result<ProofResult, crate::Error>
+	fn prove_unproven_statements(&self, time_limit: u64, cores: u64) -> Result<ProofResult, crate::Error>
 	{
 		let display_statement = |statement: &mut Statement| -> Result<(), crate::Error>
 		{
@@ -435,13 +435,14 @@ impl Problem
 
 			let mut file_ref = std::fs::OpenOptions::new().append(true).open("tff.txt").expect("Unable to open file for writing the tff formulas! - Check problem.rs");
 			file_ref.write_all(&tptp_problem_to_prove_next_statement.as_bytes()).expect("write failed");
-			println!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
+			//println!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
 
 			// TODO: make configurable again
             let string_time: &str = &time_limit.to_string();
+            let string_cores: &str = &cores.to_string();
 			let (proof_result, proof_time_seconds) =
 				run_vampire(&tptp_problem_to_prove_next_statement,
-					Some(&["--mode", "casc", "--cores", "4", "--time_limit", string_time]))?;
+					Some(&["--mode", "casc", "--cores", string_cores, "--time_limit", string_time]))?;
 
 			match self.next_unproven_statement_do_mut(
 				|statement| -> Result<(), crate::Error>
