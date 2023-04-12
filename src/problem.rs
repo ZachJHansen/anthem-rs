@@ -433,8 +433,8 @@ impl Problem
 
 			log::trace!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
 
-			let mut file_ref = std::fs::OpenOptions::new().append(true).open("tff.txt").expect("Unable to open file for writing the tff formulas! - Check problem.rs");
-			file_ref.write_all(&tptp_problem_to_prove_next_statement.as_bytes()).expect("write failed");
+			//let mut file_ref = std::fs::OpenOptions::new().append(true).open("tff.txt").expect("Unable to open file for writing the tff formulas! - Check problem.rs");
+			//file_ref.write_all(&tptp_problem_to_prove_next_statement.as_bytes()).expect("write failed");
 			//println!("TPTP program:\n{}", &tptp_problem_to_prove_next_statement);
 
 			// TODO: make configurable again
