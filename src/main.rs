@@ -31,6 +31,10 @@ enum Command
         /// Time limit for Vampire (seconds)
         #[structopt(long, default_value = "300")]
         time_limit: u64,
+
+        /// Cores for Vampire 
+        #[structopt(long, default_value = "4")]
+        cores: u64,
 	}
 }
 
@@ -50,8 +54,9 @@ fn main()
 			no_simplify,
 			color_choice,
             time_limit,
+            cores,
 		}
 			=> anthem::commands::verify_program::run(&program_path, specification_paths.as_slice(),
-				proof_direction, no_simplify, color_choice, time_limit),
+				proof_direction, no_simplify, color_choice, time_limit, cores),
 	}
 }
