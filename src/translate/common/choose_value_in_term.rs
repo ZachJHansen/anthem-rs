@@ -159,9 +159,9 @@ where
 						Box::new(crate::Term::variable(std::rc::Rc::clone(parameter_r))),
 						Box::new(crate::Term::integer(0)));
 
-					let r_less_than_q = crate::Formula::less(
+					let r_less_than_j = crate::Formula::less(
 						Box::new(crate::Term::variable(std::rc::Rc::clone(parameter_r))),
-						Box::new(crate::Term::variable(std::rc::Rc::clone(parameter_q))));
+						Box::new(crate::Term::variable(std::rc::Rc::clone(parameter_j))));
 
 					let z_equal_to_q = crate::Formula::equal(
 						Box::new(
@@ -180,7 +180,7 @@ where
 					};
 
 					let and = crate::Formula::and(vec![i_equals_j_times_q_plus_r, choose_i_in_t1,
-						choose_j_in_t2, j_not_equal_to_0, r_greater_or_equal_to_0, r_less_than_q,
+						choose_j_in_t2, j_not_equal_to_0, r_greater_or_equal_to_0, r_less_than_j,
 						last_argument]);
 
 					Ok(crate::Formula::exists(parameters, Box::new(and)))
